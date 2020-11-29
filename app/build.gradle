@@ -17,12 +17,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion rootProject.compileSdk
+    compileSdkVersion 28
 
     defaultConfig {
         applicationId "com.instantappsample.service"
         minSdkVersion rootProject.minSdk
-        targetSdkVersion rootProject.compileSdk
+        targetSdkVersion 24
         versionCode rootProject.versionCode
         versionName rootProject.versionName
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -36,11 +36,18 @@ android {
         }
         debug {}
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
     implementation "androidx.appcompat:appcompat:$appCompat"
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayout"
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation "com.android.support:support-compat:28.0.0"
 
     compileOnly 'org.projectlombok:lombok:1.18.16'
     annotationProcessor 'org.projectlombok:lombok:1.18.16'

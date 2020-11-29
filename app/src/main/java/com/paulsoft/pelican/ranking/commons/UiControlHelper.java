@@ -1,4 +1,4 @@
-package com.paulsoft.service;
+package com.paulsoft.pelican.ranking.commons;
 
 import android.widget.EditText;
 import android.widget.TextView;

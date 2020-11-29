@@ -21,7 +21,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000"
-    tools:context="com.paulsoft.service.PelicanRankMainActivity">
+    tools:context="com.paulsoft.service.com.paulsoft.pelican.ranking.activity.PelicanRankMainActivity">
 
     <TextView
         android:id="@+id/green_label"

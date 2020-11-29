@@ -1,4 +1,4 @@
-package com.paulsoft.service;
+package com.paulsoft.pelican.ranking.repository;
 
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -12,32 +12,32 @@ public class PreferencesRepository {
     public static final String PREFERENCES_NAME = "com.paulsoft.pelican.settings";
     private SharedPreferences sharedPreferences;
 
-    public PreferencesRepository(ContextWrapper contextWrapper) {
+    public PreferencesRepository(Context contextWrapper) {
         sharedPreferences = contextWrapper.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
     }
 
-    public <T> void save(String key, Class<T> type, T value) {
+    public <T> void save(Preference preference, Class<T> type, T value) {
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         if(Integer.class.equals(type)) {
-            editor.putInt(key, (Integer) value);
+            editor.putInt(preference.getKey(), (Integer) value);
         } else if (Boolean.class.equals(type)) {
-            editor.putBoolean(key, (Boolean) value);
+            editor.putBoolean(preference.getKey(), (Boolean) value);
         } else if (Float.class.equals(type)) {
-            editor.putFloat(key, (Float) value);
+            editor.putFloat(preference.getKey(), (Float) value);
         } else if (Long.class.equals(type)) {
-            editor.putLong(key, (Long) value);
+            editor.putLong(preference.getKey(), (Long) value);
         } else if (String.class.equals(type)) {
-            editor.putString(key, (String) value);
+            editor.putString(preference.getKey(), (String) value);
         } else throw new UnsupportedOperationException("Unsupported type");
 
         editor.apply();
 
     }
 
-    public <T> Optional<T> load(String key, Class<T> type) {
-        return Optional.ofNullable(load(key, type, null));
+    public <T> Optional<T> load(Preference preference, Class<T> type) {
+        return Optional.ofNullable(load(preference.getKey(), type, null));
     }
 
     public <T> T load(String key, Class<T> type, T defaultValue) {

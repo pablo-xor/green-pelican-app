@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package com.paulsoft.service;
+package com.paulsoft.pelican.ranking.activity;
 
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -24,12 +27,17 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.paulsoft.pelican.ranking.commons.RankJobScheduleInfo;
+import com.paulsoft.pelican.ranking.repository.Preference;
+import com.paulsoft.pelican.ranking.repository.PreferencesRepository;
+import com.paulsoft.service.R;
+import com.paulsoft.pelican.ranking.commons.UiControlHelper;
+
 import java.util.Optional;
 
 public class PelicanRankMainActivity extends AppCompatActivity {
 
     private static final String TAG = "PelicanMainActivity";
-    private static final String PARAM_USER_LOGIN = "usrLogin";
     public static final String EMPTY_TEXT = "";
     private PreferencesRepository preferencesRepository;
     private EditText loginField;
@@ -42,16 +50,20 @@ public class PelicanRankMainActivity extends AppCompatActivity {
         preferencesRepository = new PreferencesRepository(this);
         loginField = findViewById(R.id.login_field);
 
-        Optional<String> login = preferencesRepository.load(PARAM_USER_LOGIN, String.class);
+        Optional<String> login = preferencesRepository.load(Preference.LOGIN, String.class);
         UiControlHelper.setValue(login.orElse(EMPTY_TEXT), loginField);
 
     }
 
     public void startApp(View view) {
         String login = UiControlHelper.getValue(loginField);
-        preferencesRepository.save(PARAM_USER_LOGIN, String.class, login);
+        preferencesRepository.save(Preference.LOGIN, String.class, login);
 
-        Toast.makeText(this, "Saved...", Toast.LENGTH_SHORT).show();
+        Context context = getApplicationContext();
+        JobInfo jobInfo = RankJobScheduleInfo.create(context);
+        JobScheduler jobScheduler = context.getSystemService(JobScheduler.class);
+        jobScheduler.schedule(jobInfo);
+
     }
 
 }
