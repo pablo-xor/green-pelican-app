@@ -14,6 +14,7 @@ public class PelicanRankJobService extends JobService {
     public boolean onStartJob(JobParameters params) {
         Context context = getApplicationContext();
         Intent service = new Intent(context, PelicanRankDataFetcherService.class);
+        service.putExtra(PelicanRankDataFetcherService.PARAM_FETCHING_MODE, FetchingMode.JOB);
         context.startService(service);
 
         JobInfo jobInfo = RankJobScheduleInfo.create(context);

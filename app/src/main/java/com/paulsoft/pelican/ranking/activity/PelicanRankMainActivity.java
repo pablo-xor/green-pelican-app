@@ -18,21 +18,33 @@ package com.paulsoft.pelican.ranking.activity;
 
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.paulsoft.pelican.ranking.commons.RankJobScheduleInfo;
+import com.paulsoft.pelican.ranking.model.RankElement;
+import com.paulsoft.pelican.ranking.model.UserDto;
 import com.paulsoft.pelican.ranking.repository.Preference;
 import com.paulsoft.pelican.ranking.repository.PreferencesRepository;
+import com.paulsoft.pelican.ranking.service.FetchingMode;
+import com.paulsoft.pelican.ranking.service.PelicanRankDataFetcherService;
 import com.paulsoft.service.R;
 import com.paulsoft.pelican.ranking.commons.UiControlHelper;
 
+import java.util.List;
 import java.util.Optional;
 
 public class PelicanRankMainActivity extends AppCompatActivity {
@@ -40,7 +52,38 @@ public class PelicanRankMainActivity extends AppCompatActivity {
     private static final String TAG = "PelicanMainActivity";
     public static final String EMPTY_TEXT = "";
     private PreferencesRepository preferencesRepository;
-    private EditText loginField;
+    private Spinner userSelector;
+    private UserSpinnerAdapter userSpinnerAdapter;
+    private Optional<Long> currentUserId;
+
+    private final BroadcastReceiver rankResultFetchedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundleExtra = intent.getBundleExtra(PelicanRankDataFetcherService.EXTRA_RANK_LIST_BUNDLE);
+            List<RankElement> rank = (List<RankElement>) bundleExtra.getSerializable(PelicanRankDataFetcherService.EXTRA_RANK_LIST);
+
+            Log.d(TAG, "Rank received:" + rank);
+
+            userSpinnerAdapter.updateData(rank);
+
+            if(currentUserId.isPresent()) {
+                userSelector.setSelection(userSpinnerAdapter.getPosition(currentUserId.get()));
+            }
+
+        }
+    };
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(rankResultFetchedReceiver, new IntentFilter(
+                PelicanRankDataFetcherService.EVENT_RANK_RESULT_FETCHED));
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(rankResultFetchedReceiver);
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,22 +91,26 @@ public class PelicanRankMainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_service);
 
         preferencesRepository = new PreferencesRepository(this);
-        loginField = findViewById(R.id.login_field);
+        currentUserId = preferencesRepository.load(Preference.USER_ID, Long.class);
 
-        Optional<String> login = preferencesRepository.load(Preference.LOGIN, String.class);
-        UiControlHelper.setValue(login.orElse(EMPTY_TEXT), loginField);
+        userSelector = findViewById(R.id.user_selector);
 
+        userSpinnerAdapter = new UserSpinnerAdapter(getApplicationContext());
+        userSelector.setAdapter(userSpinnerAdapter);
+
+        Intent serviceIntent = new Intent(this, PelicanRankDataFetcherService.class);
+        serviceIntent.putExtra(PelicanRankDataFetcherService.PARAM_FETCHING_MODE, FetchingMode.SINGLE_CALL);
+        startService(serviceIntent);
     }
 
     public void startApp(View view) {
-        String login = UiControlHelper.getValue(loginField);
-        preferencesRepository.save(Preference.LOGIN, String.class, login);
+        UserDto selectedItem = (UserDto) userSelector.getSelectedItem();
+        preferencesRepository.save(Preference.USER_ID, Long.class, selectedItem.getUserId());
 
         Context context = getApplicationContext();
         JobInfo jobInfo = RankJobScheduleInfo.create(context);
         JobScheduler jobScheduler = context.getSystemService(JobScheduler.class);
         jobScheduler.schedule(jobInfo);
-
     }
 
 }

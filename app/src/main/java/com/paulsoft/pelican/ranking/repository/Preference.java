@@ -8,7 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum Preference {
 
-    LOGIN("usrLogin");
+    USER_ID("userId");
 
     private String key;
 

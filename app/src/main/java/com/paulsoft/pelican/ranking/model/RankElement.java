@@ -1,11 +1,14 @@
 package com.paulsoft.pelican.ranking.model;
 
+import java.io.Serializable;
 import java.net.URI;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class RankElement {
+@Builder
+public class RankElement implements Serializable {
 
     private URI iconUrl;
     private String name;
@@ -14,6 +17,5 @@ public class RankElement {
     private Long athleteId;
     private Integer run;
     private Integer ride;
-    private String login;
 
 }

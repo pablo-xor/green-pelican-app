@@ -17,7 +17,7 @@ public class PelicanRankJobAfterBootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        Optional<String> login = new PreferencesRepository(context).load(Preference.LOGIN, String.class);
+        Optional<Long> login = new PreferencesRepository(context).load(Preference.USER_ID, Long.class);
 
         if(login.isPresent()) {
             JobInfo jobInfo = RankJobScheduleInfo.create(context);
