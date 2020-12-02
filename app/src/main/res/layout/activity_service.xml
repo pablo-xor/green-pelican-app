@@ -74,7 +74,7 @@
         android:fontFamily="casual"
         android:foregroundTint="#FFFFFF"
         android:gravity="center"
-        android:text="Twój login Strava"
+        android:text="Wybierz pelikana"
         android:textColor="#FFFFFF"
         android:textSize="18sp"
         app:layout_constraintTop_toTopOf="parent"
@@ -94,10 +94,16 @@
 
     <Spinner
         android:id="@+id/user_selector"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:foregroundTint="#FFFFFF"
-        tools:layout_editor_absoluteX="5dp"
-        tools:layout_editor_absoluteY="468dp" />
+        android:layout_width="408dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="41dp"
+        android:layout_marginBottom="239dp"
+        android:background="#FFFFFF"
+        android:foregroundTint="#000000"
+        android:spinnerMode="dropdown"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/ranking_label2"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_editor_absoluteX="2dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

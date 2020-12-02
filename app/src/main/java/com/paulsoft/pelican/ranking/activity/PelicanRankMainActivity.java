@@ -111,6 +111,12 @@ public class PelicanRankMainActivity extends AppCompatActivity {
         JobInfo jobInfo = RankJobScheduleInfo.create(context);
         JobScheduler jobScheduler = context.getSystemService(JobScheduler.class);
         jobScheduler.schedule(jobInfo);
+
+        Intent serviceIntent = new Intent(this, PelicanRankDataFetcherService.class);
+        serviceIntent.putExtra(PelicanRankDataFetcherService.PARAM_FETCHING_MODE, FetchingMode.JOB);
+        startService(serviceIntent);
+
+        finish();
     }
 
 }

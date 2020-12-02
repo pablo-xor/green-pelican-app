@@ -1,21 +1,32 @@
 package com.paulsoft.pelican.ranking.service;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.MediaStore;
 import android.util.Log;
+
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.paulsoft.pelican.ranking.model.RankElement;
 import com.paulsoft.pelican.ranking.provider.RankingRemoteProvider;
 import com.paulsoft.pelican.ranking.repository.Preference;
 import com.paulsoft.pelican.ranking.repository.PreferencesRepository;
+import com.paulsoft.service.R;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 
 @NoArgsConstructor
 public class PelicanRankDataFetcherService extends Service {
@@ -24,6 +35,8 @@ public class PelicanRankDataFetcherService extends Service {
     public static final String EVENT_RANK_RESULT_FETCHED = "com.paulsoft.pelican.ranking.service.RankResultFetched";
     public static final String EXTRA_RANK_LIST = "RANK_LIST";
     public static final String EXTRA_RANK_LIST_BUNDLE = "EXTRA_RANK_LIST_BUNDLE";
+    public static final String CHANNEL_ID = "com.paulsoft.pelican.ranking.service.RankNotifyChannel";
+    public static final int NOTIFY_ID = 1;
 
     private PreferencesRepository preferencesRepository;
     private RankingRemoteProvider rankingRemoteProvider;
@@ -74,8 +87,28 @@ public class PelicanRankDataFetcherService extends Service {
         Optional<RankElement> userRanking = rankElements.stream()
                 .filter(el -> userId.equals(el.getAthleteId())).findAny();
 
-        userRanking.ifPresent(rankElement -> Log.i("XXX", "Fetch current element: " + rankElement));
+        userRanking.ifPresent(this::showNotify);
     }
+
+    @SneakyThrows
+    private void showNotify(RankElement rankElement) {
+
+//        Bitmap userIcon = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(rankElement.getIconUrl()));
+
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this, CHANNEL_ID)
+//                        .setLargeIcon(userIcon)
+                        .setContentTitle("Zielony pelikan - ranking - " + rankElement.getName())
+                        .setContentText(rankElement.toString())
+                        .setPriority(NotificationCompat.PRIORITY_HIGH);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+        notificationManager.notify(NOTIFY_ID, builder.build());
+
+    }
+
+
 
     @Override
     public void onCreate() {

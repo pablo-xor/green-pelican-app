@@ -10,7 +10,7 @@ import lombok.Data;
 @Builder
 public class RankElement implements Serializable {
 
-    private URI iconUrl;
+    private String iconUrl;
     private String name;
     private Integer total;
     private Integer place;

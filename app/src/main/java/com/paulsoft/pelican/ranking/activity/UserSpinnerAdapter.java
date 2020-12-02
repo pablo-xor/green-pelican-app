@@ -14,7 +14,7 @@ public class UserSpinnerAdapter extends ArrayAdapter<UserDto> {
     private List<Long> ids;
 
     public UserSpinnerAdapter(Context context) {
-        super(context, android.R.layout.simple_spinner_item);
+        super(context, android.R.layout.simple_spinner_dropdown_item);
     }
 
     public void updateData(List<RankElement> rank) {
