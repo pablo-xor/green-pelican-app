@@ -5,23 +5,27 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.util.LruCache;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.paulsoft.pelican.ranking.model.RankElement;
+import com.paulsoft.pelican.ranking.provider.FetchResult;
 import com.paulsoft.pelican.ranking.provider.RankingRemoteProvider;
 import com.paulsoft.pelican.ranking.repository.Preference;
 import com.paulsoft.pelican.ranking.repository.PreferencesRepository;
 import com.paulsoft.service.R;
 
 import java.io.Serializable;
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +41,7 @@ public class PelicanRankDataFetcherService extends Service {
     public static final String EXTRA_RANK_LIST_BUNDLE = "EXTRA_RANK_LIST_BUNDLE";
     public static final String CHANNEL_ID = "com.paulsoft.pelican.ranking.service.RankNotifyChannel";
     public static final int NOTIFY_ID = 1;
+
 
     private PreferencesRepository preferencesRepository;
     private RankingRemoteProvider rankingRemoteProvider;
@@ -93,21 +98,20 @@ public class PelicanRankDataFetcherService extends Service {
     @SneakyThrows
     private void showNotify(RankElement rankElement) {
 
-//        Bitmap userIcon = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(rankElement.getIconUrl()));
+        rankingRemoteProvider.loadUserImage(rankElement.getIconUrl(), result -> {
+            NotificationCompat.Builder builder =
+                    new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
+                            .setLargeIcon(BitmapFactory.decodeByteArray(result, 0, result.length))
+                            .setSmallIcon(R.drawable.ic_stat_name)
+                            .setContentTitle("Zielony pelikan - ranking - " + rankElement.getName())
+                            .setContentText(rankElement.toString())
+                            .setPriority(NotificationCompat.PRIORITY_HIGH);
 
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(this, CHANNEL_ID)
-//                        .setLargeIcon(userIcon)
-                        .setContentTitle("Zielony pelikan - ranking - " + rankElement.getName())
-                        .setContentText(rankElement.toString())
-                        .setPriority(NotificationCompat.PRIORITY_HIGH);
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
 
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-
-        notificationManager.notify(NOTIFY_ID, builder.build());
-
+            notificationManager.notify(NOTIFY_ID, builder.build());
+        });
     }
-
 
 
     @Override

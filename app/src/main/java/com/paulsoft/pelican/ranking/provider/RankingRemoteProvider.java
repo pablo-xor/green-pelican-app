@@ -1,22 +1,20 @@
 package com.paulsoft.pelican.ranking.provider;
 
-import android.util.Log;
+import android.graphics.Bitmap;
+import android.util.LruCache;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.paulsoft.pelican.ranking.backend.RankingClient;
-import com.paulsoft.pelican.ranking.backend.RankingFetchResult;
 import com.paulsoft.pelican.ranking.model.RankElement;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import lombok.AllArgsConstructor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -33,9 +31,14 @@ public class RankingRemoteProvider {
         buildRankingClient();
     }
 
-    public void fetchRanking(RankingFetchResult rankingFetchResult) {
+    public void fetchRanking(FetchResult<List<RankElement>> rankingFetchResult) {
         Call<List<RankElement>> rankCall = rankingClient.getRank();
-        rankCall.enqueue(new RankingCallbackResultWrapper(rankingFetchResult));
+        rankCall.enqueue(new ResultWrapper<>(rankingFetchResult));
+    }
+
+    public void loadUserImage(String iconUrl, FetchResult<byte[]> iconLoadedResult) {
+        Call<byte[]> userIconCall = rankingClient.getUserIcon(iconUrl);
+        userIconCall.enqueue(new ResultWrapper<>(iconLoadedResult));
     }
 
     private void buildRankingClient() {
@@ -59,23 +62,5 @@ public class RankingRemoteProvider {
                 .build();
 
         rankingClient = retrofit.create(RankingClient.class);
-    }
-
-    @AllArgsConstructor
-    private static class RankingCallbackResultWrapper implements Callback<List<RankElement>>{
-
-        private RankingFetchResult rankingFetchResult;
-
-        @Override
-        public void onResponse(Call<List<RankElement>> call, Response<List<RankElement>> response) {
-            List<RankElement> ranking = response.body();
-            Log.d(getClass().getSimpleName(), "Result: " + ranking);
-            rankingFetchResult.afterRankingLoaded(ranking);
-        }
-
-        @Override
-        public void onFailure(Call<List<RankElement>> call, Throwable t) {
-            Log.e(getClass().getSimpleName(), "Err: " + t.getClass().getSimpleName() + ":" + t.getMessage());
-        }
     }
 }
