@@ -8,15 +8,16 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 @AllArgsConstructor
-public class ResultWrapper<T> implements Callback<T> {
+public class ConvertedResultWrapper<T, O> implements Callback<T> {
 
-    private final FetchResult<T> fetchResult;
+    private final FetchResult<O> fetchResult;
+    private final Converter<T, O> converter;
 
     @Override
     public void onResponse(Call<T> call, Response<T> response) {
         T result = response.body();
         Log.d(getClass().getSimpleName(), "Result: " + result);
-        fetchResult.afterFetched(result);
+        fetchResult.afterFetched(converter.convert(result));
     }
 
     @Override

@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -37,8 +38,8 @@ public class RankingRemoteProvider {
     }
 
     public void loadUserImage(String iconUrl, FetchResult<byte[]> iconLoadedResult) {
-        Call<byte[]> userIconCall = rankingClient.getUserIcon(iconUrl);
-        userIconCall.enqueue(new ResultWrapper<>(iconLoadedResult));
+        Call<ResponseBody> userIconCall = rankingClient.getUserIcon(iconUrl);
+        userIconCall.enqueue(new ConvertedResultWrapper<>(iconLoadedResult, (f) -> toString().getBytes()));
     }
 
     private void buildRankingClient() {

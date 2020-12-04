@@ -4,6 +4,7 @@ import com.paulsoft.pelican.ranking.model.RankElement;
 
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Url;
@@ -14,6 +15,6 @@ public interface RankingClient {
     Call<List<RankElement>> getRank();
 
     @GET
-    Call<byte[]> getUserIcon(@Url String iconIrl);
+    Call<ResponseBody> getUserIcon(@Url String iconIrl);
 
 }
