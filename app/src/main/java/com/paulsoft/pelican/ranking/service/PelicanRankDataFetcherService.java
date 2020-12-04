@@ -21,6 +21,7 @@ import com.paulsoft.pelican.ranking.repository.Preference;
 import com.paulsoft.pelican.ranking.repository.PreferencesRepository;
 import com.paulsoft.service.R;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +43,6 @@ public class PelicanRankDataFetcherService extends Service {
     public static final String PLACE_DOWN_TEXT = "Spadłeś na miejsce %d :(";
     public static final int PLACE_CHANGED_NOTIFY_ID = 2;
     public static final String PARAM_USER_CHANGED = "userChanged";
-
 
     private PreferencesRepository preferencesRepository;
     private RankingRemoteProvider rankingRemoteProvider;
@@ -152,11 +152,11 @@ public class PelicanRankDataFetcherService extends Service {
         });
     }
 
-    private Notification buildSummaryNotification(RankElement rankElement, byte[] result) {
+    private Notification buildSummaryNotification(RankElement rankElement, InputStream result) {
         Intent mainActivityIntent = new Intent(this, PelicanRankMainActivity.class);
 
         return new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
-                .setLargeIcon(BitmapFactory.decodeByteArray(result, 0, result.length))
+                .setLargeIcon(BitmapFactory.decodeStream(result))
                 .setSmallIcon(R.drawable.ic_stat_name)
                 .setContentTitle("Miejsce: " + rankElement.getPlace())
                 .setColorized(true)

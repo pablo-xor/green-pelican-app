@@ -8,6 +8,7 @@ import com.google.gson.GsonBuilder;
 import com.paulsoft.pelican.ranking.backend.RankingClient;
 import com.paulsoft.pelican.ranking.model.RankElement;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -37,9 +38,9 @@ public class RankingRemoteProvider {
         rankCall.enqueue(new ResultWrapper<>(rankingFetchResult));
     }
 
-    public void loadUserImage(String iconUrl, FetchResult<byte[]> iconLoadedResult) {
+    public void loadUserImage(String iconUrl, FetchResult<InputStream> iconLoadedResult) {
         Call<ResponseBody> userIconCall = rankingClient.getUserIcon(iconUrl);
-        userIconCall.enqueue(new ConvertedResultWrapper<>(iconLoadedResult, (f) -> toString().getBytes()));
+        userIconCall.enqueue(new ConvertedResultWrapper<>(iconLoadedResult, ResponseBody::byteStream));
     }
 
     private void buildRankingClient() {
