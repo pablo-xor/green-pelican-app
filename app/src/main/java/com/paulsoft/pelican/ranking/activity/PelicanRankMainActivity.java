@@ -107,6 +107,8 @@ public class PelicanRankMainActivity extends AppCompatActivity {
         UserDto selectedItem = (UserDto) userSelector.getSelectedItem();
         preferencesRepository.save(Preference.USER_ID, Long.class, selectedItem.getUserId());
 
+        boolean userChanged = currentUserId.isPresent() && currentUserId.get() != selectedItem.getUserId();
+
         Context context = getApplicationContext();
         JobInfo jobInfo = RankJobScheduleInfo.create(context);
         JobScheduler jobScheduler = context.getSystemService(JobScheduler.class);
@@ -114,6 +116,8 @@ public class PelicanRankMainActivity extends AppCompatActivity {
 
         Intent serviceIntent = new Intent(this, PelicanRankDataFetcherService.class);
         serviceIntent.putExtra(PelicanRankDataFetcherService.PARAM_FETCHING_MODE, FetchingMode.JOB);
+        serviceIntent.putExtra(PelicanRankDataFetcherService.PARAM_USER_CHANGED, userChanged);
+
         startService(serviceIntent);
 
         finish();

@@ -36,6 +36,12 @@ public class PreferencesRepository {
 
     }
 
+    public void delete(Preference preference) {
+        SharedPreferences.Editor edit = sharedPreferences.edit();
+        edit.remove(preference.getKey());
+        edit.apply();
+    }
+
     public <T> Optional<T> load(Preference preference, Class<T> type) {
         return Optional.ofNullable(load(preference.getKey(), type, null));
     }

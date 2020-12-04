@@ -3,6 +3,7 @@ package com.paulsoft.pelican.ranking.service;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
@@ -13,6 +14,7 @@ import android.os.IBinder;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import com.paulsoft.pelican.ranking.activity.PelicanRankMainActivity;
 import com.paulsoft.pelican.ranking.model.RankElement;
 import com.paulsoft.pelican.ranking.provider.RankingRemoteProvider;
 import com.paulsoft.pelican.ranking.repository.Preference;
@@ -39,6 +41,7 @@ public class PelicanRankDataFetcherService extends Service {
     public static final String PLACE_UP_TEXT = "Gratulacje! Jesteś aktualnie na %d miejscu";
     public static final String PLACE_DOWN_TEXT = "Spadłeś na miejsce %d :(";
     public static final int PLACE_CHANGED_NOTIFY_ID = 2;
+    public static final String PARAM_USER_CHANGED = "userChanged";
 
 
     private PreferencesRepository preferencesRepository;
@@ -51,6 +54,11 @@ public class PelicanRankDataFetcherService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+        if(intent.hasExtra(PARAM_USER_CHANGED) && intent.getBooleanExtra(PARAM_USER_CHANGED, false)) {
+            preferencesRepository.delete(Preference.LAST_RANK);
+        }
+
         int fetchingMode = intent.getIntExtra(PARAM_FETCHING_MODE, FetchingMode.SINGLE_CALL);
 
         switch (fetchingMode) {
@@ -145,6 +153,8 @@ public class PelicanRankDataFetcherService extends Service {
     }
 
     private Notification buildSummaryNotification(RankElement rankElement, byte[] result) {
+        Intent mainActivityIntent = new Intent(this, PelicanRankMainActivity.class);
+
         return new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
                 .setLargeIcon(BitmapFactory.decodeByteArray(result, 0, result.length))
                 .setSmallIcon(R.drawable.ic_stat_name)
@@ -152,6 +162,7 @@ public class PelicanRankDataFetcherService extends Service {
                 .setColorized(true)
                 .setBadgeIconType(NotificationCompat.BADGE_ICON_LARGE)
                 .setColor(getColor(R.color.colorOrange))
+                .setContentIntent(PendingIntent.getActivity(this, 0, mainActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT))
                 .setStyle(new NotificationCompat.InboxStyle()
                         .addLine("Jazda rowerem: " + rankElement.getRide() + "km")
                         .addLine("Bieganie: " + rankElement.getRun() + "km")
