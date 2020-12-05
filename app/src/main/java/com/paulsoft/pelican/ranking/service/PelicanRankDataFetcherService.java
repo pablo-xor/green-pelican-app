@@ -6,10 +6,12 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.LruCache;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -24,6 +26,7 @@ import com.paulsoft.service.R;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import lombok.NoArgsConstructor;
@@ -44,6 +47,8 @@ public class PelicanRankDataFetcherService extends Service {
     public static final int PLACE_CHANGED_NOTIFY_ID = 2;
     public static final String PARAM_USER_CHANGED = "userChanged";
 
+    private static LruCache<String, Bitmap> iconsCache;
+
     private PreferencesRepository preferencesRepository;
     private RankingRemoteProvider rankingRemoteProvider;
 
@@ -55,7 +60,7 @@ public class PelicanRankDataFetcherService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        if(intent.hasExtra(PARAM_USER_CHANGED) && intent.getBooleanExtra(PARAM_USER_CHANGED, false)) {
+        if (intent.hasExtra(PARAM_USER_CHANGED) && intent.getBooleanExtra(PARAM_USER_CHANGED, false)) {
             preferencesRepository.delete(Preference.LAST_RANK);
         }
 
@@ -146,17 +151,25 @@ public class PelicanRankDataFetcherService extends Service {
 
     @SneakyThrows
     private void showSummaryNotify(RankElement rankElement) {
-        rankingRemoteProvider.loadUserImage(rankElement.getIconUrl(), result -> {
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-            notificationManager.notify(SUMMARY_NOTIFY_ID, buildSummaryNotification(rankElement, result));
-        });
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+        Bitmap cachedUserAvatar = iconsCache.get(rankElement.getIconUrl());
+        if (Objects.nonNull(cachedUserAvatar)) {
+            notificationManager.notify(SUMMARY_NOTIFY_ID, buildSummaryNotification(rankElement, cachedUserAvatar));
+        } else {
+            rankingRemoteProvider.loadUserImage(rankElement.getIconUrl(), result -> {
+                Bitmap userAvatar = BitmapFactory.decodeStream(result);
+                iconsCache.put(rankElement.getIconUrl(), userAvatar);
+                notificationManager.notify(SUMMARY_NOTIFY_ID, buildSummaryNotification(rankElement, userAvatar));
+            });
+        }
     }
 
-    private Notification buildSummaryNotification(RankElement rankElement, InputStream result) {
+    private Notification buildSummaryNotification(RankElement rankElement, Bitmap result) {
         Intent mainActivityIntent = new Intent(this, PelicanRankMainActivity.class);
 
         return new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
-                .setLargeIcon(BitmapFactory.decodeStream(result))
+                .setLargeIcon(result)
                 .setSmallIcon(R.drawable.ic_stat_name)
                 .setContentTitle("Miejsce: " + rankElement.getPlace())
                 .setColorized(true)
@@ -175,6 +188,7 @@ public class PelicanRankDataFetcherService extends Service {
     public void onCreate() {
         preferencesRepository = new PreferencesRepository(getApplicationContext());
         rankingRemoteProvider = new RankingRemoteProvider();
+        iconsCache = new LruCache<>(1000);
         createNotificationChannel();
         super.onCreate();
     }
