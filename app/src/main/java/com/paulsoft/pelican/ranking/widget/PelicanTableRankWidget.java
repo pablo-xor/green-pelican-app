@@ -5,7 +5,6 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.widget.RemoteViews;
 
-import com.evrencoskun.tableview.TableView;
 import com.paulsoft.service.R;
 
 /**
@@ -19,6 +18,7 @@ public class PelicanTableRankWidget extends AppWidgetProvider {
         CharSequence widgetText = context.getString(R.string.appwidget_text);
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.pelican_table_rank_widget);
+
 
 
 //        views.setTextViewText(R.id., widgetText);
@@ -36,9 +36,9 @@ public class PelicanTableRankWidget extends AppWidgetProvider {
         }
     }
 
+
     @Override
     public void onEnabled(Context context) {
-
 
         // Enter relevant functionality for when the first widget is created
     }
