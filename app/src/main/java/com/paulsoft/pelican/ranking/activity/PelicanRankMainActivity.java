@@ -25,11 +25,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -42,7 +38,6 @@ import com.paulsoft.pelican.ranking.repository.PreferencesRepository;
 import com.paulsoft.pelican.ranking.service.FetchingMode;
 import com.paulsoft.pelican.ranking.service.PelicanRankDataFetcherService;
 import com.paulsoft.service.R;
-import com.paulsoft.pelican.ranking.commons.UiControlHelper;
 
 import java.util.List;
 import java.util.Optional;

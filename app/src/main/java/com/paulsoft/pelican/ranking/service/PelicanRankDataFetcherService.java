@@ -26,9 +26,7 @@ import com.paulsoft.pelican.ranking.repository.PreferencesRepository;
 import com.paulsoft.pelican.ranking.widget.PelicanTableRankWidget;
 import com.paulsoft.service.R;
 
-import java.io.InputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -104,20 +102,32 @@ public class PelicanRankDataFetcherService extends Service {
 
     private List<RankElementWrapper> convertToRankElementWrapper(List<RankElement> rankElements) {
         return rankElements.stream()
-                .map(el -> new RankElementWrapper(el, null))
+                .map(el -> new RankElementWrapper(el, iconsCache.get(el.getIconUrl())))
                 .collect(Collectors.toList());
     }
 
     private void sendRankDataToWidget(List<RankElement> ranks) {
+
+        List<String> iconsToFetch = ranks.stream()
+                .filter(el -> null == iconsCache.get(el.getIconUrl()))
+                .map(RankElement::getIconUrl)
+                .collect(Collectors.toList());
+
+        rankingRemoteProvider.loadUserImages(iconsToFetch, icons -> {
+            icons.forEach(el -> iconsCache.put(el.first, BitmapFactory.decodeStream(el.second)));
+            sendBroadcast(prepareWidgetIntent(ranks));
+        });
+    }
+
+    private Intent prepareWidgetIntent(List<RankElement> rankElements) {
         Bundle bundle = new Bundle();
-        bundle.putSerializable(EXTRA_RANK_LIST, (Serializable) convertToRankElementWrapper(lastLoadedRank));
+        bundle.putSerializable(EXTRA_RANK_LIST, (Serializable) convertToRankElementWrapper(rankElements));
 
         Intent intent = new Intent(EVENT_RANK_RESULT_WRAPPED_FETCHED);
         intent.putExtra(EXTRA_RANK_LIST_EXTENDED_BUNDLE, bundle);
 
         intent.setComponent(new ComponentName(getApplicationContext(), PelicanTableRankWidget.class));
-
-        sendBroadcast(intent);
+        return intent;
     }
 
     private void runSingleCallAction() {

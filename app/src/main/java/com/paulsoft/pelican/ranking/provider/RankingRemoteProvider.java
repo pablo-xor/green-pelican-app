@@ -1,7 +1,8 @@
 package com.paulsoft.pelican.ranking.provider;
 
-import android.graphics.Bitmap;
-import android.util.LruCache;
+import android.annotation.SuppressLint;
+import android.util.Log;
+import android.util.Pair;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -9,15 +10,22 @@ import com.paulsoft.pelican.ranking.backend.RankingClient;
 import com.paulsoft.pelican.ranking.model.RankElement;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.ResponseBody;
-import retrofit2.Call;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RankingRemoteProvider {
@@ -33,14 +41,43 @@ public class RankingRemoteProvider {
         buildRankingClient();
     }
 
+    @SuppressLint("CheckResult")
     public void fetchRanking(FetchResult<List<RankElement>> rankingFetchResult) {
-        Call<List<RankElement>> rankCall = rankingClient.getRank();
-        rankCall.enqueue(new ResultWrapper<>(rankingFetchResult));
+        rankingClient.getRank()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(rankingFetchResult::afterFetched, this::onError);
     }
 
     public void loadUserImage(String iconUrl, FetchResult<InputStream> iconLoadedResult) {
-        Call<ResponseBody> userIconCall = rankingClient.getUserIcon(iconUrl);
-        userIconCall.enqueue(new ConvertedResultWrapper<>(iconLoadedResult, ResponseBody::byteStream));
+        rankingClient.getUserIcon(iconUrl)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .map(el -> el.byteStream())
+                .subscribe(iconLoadedResult::afterFetched, this::onError);
+    }
+
+    public void loadUserImages(List<String> iconUrls, FetchResult<List<Pair<String, InputStream>>> iconsFetchResult) {
+        List<Observable<ResponseBody>> calls = new ArrayList<>();
+
+        iconUrls.forEach(el -> {
+            calls.add(rankingClient.getUserIcon(el)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread()));
+        });
+
+        Observable.zip(calls, res -> convertToIconStreams(iconUrls, res))
+                .subscribe(iconsFetchResult::afterFetched, this::onError);
+    }
+
+    private List<Pair<String, InputStream>> convertToIconStreams(List<String> urls, Object[] objects) {
+        List<Pair<String, InputStream>> icons = new ArrayList<>(objects.length);
+
+        for (int i = 0; i < urls.size(); i++) {
+            icons.add(Pair.create(urls.get(i), ((ResponseBody)objects[i]).byteStream()));
+        }
+
+        return icons;
     }
 
     private void buildRankingClient() {
@@ -61,8 +98,13 @@ public class RankingRemoteProvider {
                 .baseUrl(BACKEND_API_URL)
                 .client(httpClient)
                 .addConverterFactory(GsonConverterFactory.create(gson))
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build();
 
         rankingClient = retrofit.create(RankingClient.class);
+    }
+
+    private void onError(Throwable e) {
+        Log.e(getClass().getSimpleName(), "Err: " + e.getClass().getSimpleName() + ":" + e.getMessage(), e);
     }
 }
