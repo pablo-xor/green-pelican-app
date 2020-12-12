@@ -22,6 +22,7 @@
             android:textAllCaps="false"
             android:textColor="#44FF00"
             android:textSize="12sp"></TextView>
+
     </FrameLayout>
 
     <LinearLayout

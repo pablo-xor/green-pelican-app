@@ -1,7 +1,6 @@
 package com.paulsoft.pelican.ranking.widget;
 
 import android.content.Context;
-import android.text.Html;
 import android.widget.AdapterView;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
@@ -15,7 +14,7 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class PelicanRankWidgetViewsFactory implements RemoteViewsService.RemoteViewsFactory {
+public class PelicanRankWidgetViewsFactory implements RemoteViewsService.RemoteViewsFactory{
 
     private final Context context;
     private final List<RankElementWrapper> rankList;
@@ -41,7 +40,6 @@ public class PelicanRankWidgetViewsFactory implements RemoteViewsService.RemoteV
 
     @Override
     public RemoteViews getViewAt(int position) {
-
         if (position == AdapterView.INVALID_POSITION) {
             return null;
         }
@@ -49,13 +47,17 @@ public class PelicanRankWidgetViewsFactory implements RemoteViewsService.RemoteV
         RankElementWrapper rankItem = rankList.get(position);
 
         RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.table_rank_row);
-        rv.setBitmap(R.id.userAvatar, null, rankItem.getIcon());
 
-
+        if(rankItem.hasUserAvatar()) {
+            rv.setBitmap(R.id.userAvatar, null, rankItem.getIcon());
+        }
 
         RankElement rankElement = rankItem.getRankElement();
+        rv.setTextViewText(R.id.place, rankElement.getPlace().toString());
         rv.setTextViewText(R.id.login, rankElement.getName());
-//        rv.setTextViewText(R.id.points, Html.fromHtml(rankElement.get, Html.FROM_HTML_MODE_COMPACT));
+        rv.setTextViewText(R.id.points, rankElement.getTotal() + " pts");
+        rv.setTextViewText(R.id.ridding, rankElement.getRide() + " km");
+        rv.setTextViewText(R.id.running, rankElement.getRun() + " km");
 
         return rv;
 

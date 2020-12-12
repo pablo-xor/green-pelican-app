@@ -1,99 +1,99 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="horizontal"
-    android:layout_width="match_parent"
-    android:paddingLeft="1dp"
-    android:paddingRight="1dp"
-    android:paddingStart="1dp"
-    android:paddingEnd="1dp"
-    android:minHeight="1dp"
-    android:weightSum="2"
     android:id="@+id/widgetItemContainer"
-    android:layout_height="wrap_content">
+    android:layout_width="match_parent"
+    android:layout_height="45dp"
+    android:minHeight="1dp"
+    android:orientation="horizontal"
+    android:paddingStart="1dp"
+    android:paddingLeft="1dp"
+    android:paddingEnd="1dp"
+    android:paddingRight="1dp"
+    android:weightSum="2">
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="41dp"
-        android:layout_weight="1">
+    <TextView
+        android:id="@+id/place"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.2"
+        android:gravity="center_vertical"
+        android:paddingLeft="5dp"
+        android:text="1."
+        android:textColor="#000000"
+        android:textSize="18sp" />
 
-        <TextView
-            android:id="@+id/rowNr"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.5"
-            android:gravity="center_vertical"
-            android:paddingLeft="5dp"
-            android:text="1."
-            android:textColor="#000000" />
+    <ImageView
+        android:id="@+id/userAvatar"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.1"
+        android:src="@android:drawable/presence_away" />
 
-        <ImageView
-            android:id="@+id/userAvatar"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.5"
-            android:contentDescription="TODO"
-            app:srcCompat="@android:drawable/presence_away" />
+    <TextView
+        android:id="@+id/login"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.6"
+        android:fontFamily="sans-serif-black"
+        android:gravity="center_vertical"
+        android:paddingLeft="5dp"
+        android:text="Paweł Matuszak"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textSize="18sp" />
 
-        <TextView
-            android:id="@+id/login"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="3"
-            android:fontFamily="sans-serif-black"
-            android:gravity="center_vertical"
-            android:paddingLeft="5dp"
-            android:text="Paweł Matuszak"
-            android:textAllCaps="false"
-            android:textColor="#000000" />
+    <TextView
+        android:id="@+id/points"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.3"
+        android:gravity="center_vertical"
+        android:paddingLeft="5dp"
+        android:text="244 pts"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textSize="18sp" />
 
-        <TextView
-            android:id="@+id/points"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
-            android:paddingLeft="5dp"
-            android:text="244 pts"
-            android:textAllCaps="false"
-            android:textColor="#000000" />
+    <TextView
+        android:id="@+id/ridding"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.3"
+        android:gravity="right|center_vertical"
+        android:paddingLeft="2dp"
+        android:paddingRight="5dp"
+        android:text="72 km"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textSize="18sp" />
 
-        <TextView
-            android:id="@+id/ridding"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
-            android:paddingLeft="5dp"
-            android:text="72 km"
-            android:textAllCaps="false"
-            android:textColor="#000000" />
+    <ImageView
+        android:id="@+id/riddingIcon"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.1"
+        android:scaleType="fitCenter"
+        android:src="@drawable/bicycle" />
 
-        <ImageView
-            android:id="@+id/riddingIcon"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:scaleType="fitCenter"
-            app:srcCompat="@drawable/bicycle" />
+    <TextView
+        android:id="@+id/running"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.3"
+        android:gravity="right|center_vertical"
+        android:paddingLeft="2dp"
+        android:paddingRight="5dp"
+        android:text="60km"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textSize="18sp" />
 
-        <TextView
-            android:id="@+id/running"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
-            android:paddingLeft="5dp"
-            android:text="60km"
-            android:textAllCaps="false"
-            android:textColor="#000000" />
-
-        <ImageView
-            android:id="@+id/runningIcon"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.5"
-            android:scaleType="fitCenter"
-            app:srcCompat="@drawable/running" />
-    </TableRow>
+    <ImageView
+        android:id="@+id/runningIcon"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.1"
+        android:scaleType="fitCenter"
+        android:src="@drawable/running" />
 
 </LinearLayout>

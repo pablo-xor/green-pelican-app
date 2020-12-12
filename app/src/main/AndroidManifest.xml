@@ -43,6 +43,10 @@
             android:label="Pelican Rank - Job service"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
+        <service
+            android:name="com.paulsoft.pelican.ranking.widget.PelicanRankWidgetRemoteViewsService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
         <activity
             android:name="com.paulsoft.pelican.ranking.activity.PelicanRankMainActivity"
             android:icon="@mipmap/ic_launcher"
