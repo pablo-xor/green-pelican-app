@@ -12,14 +12,14 @@ import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.LruCache;
+import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.paulsoft.pelican.ranking.activity.PelicanRankMainActivity;
+import com.paulsoft.pelican.ranking.commons.ImageCache;
 import com.paulsoft.pelican.ranking.model.RankElement;
-import com.paulsoft.pelican.ranking.model.RankElementWrapper;
 import com.paulsoft.pelican.ranking.provider.RankingRemoteProvider;
 import com.paulsoft.pelican.ranking.repository.Preference;
 import com.paulsoft.pelican.ranking.repository.PreferencesRepository;
@@ -53,7 +53,6 @@ public class PelicanRankDataFetcherService extends Service {
     public static final int PLACE_CHANGED_NOTIFY_ID = 2;
     public static final String PARAM_USER_CHANGED = "userChanged";
 
-    private static LruCache<String, Bitmap> iconsCache;
     private List<RankElement> lastLoadedRank;
 
     private PreferencesRepository preferencesRepository;
@@ -93,38 +92,38 @@ public class PelicanRankDataFetcherService extends Service {
     private void runCallForWidget() {
 
         if(Objects.nonNull(lastLoadedRank)) {
-            sendRankDataToWidget(lastLoadedRank);
+            sendRankDataToWidget(lastLoadedRank, FetchingMode.FOR_WIDGET);
         } else {
-          rankingRemoteProvider.fetchRanking(this::sendRankDataToWidget);
+          rankingRemoteProvider.fetchRanking(r -> sendRankDataToWidget(r, FetchingMode.FOR_WIDGET));
         }
 
     }
 
-    private List<RankElementWrapper> convertToRankElementWrapper(List<RankElement> rankElements) {
-        return rankElements.stream()
-                .map(el -> new RankElementWrapper(el, iconsCache.get(el.getIconUrl())))
-                .collect(Collectors.toList());
-    }
+    private void sendRankDataToWidget(List<RankElement> ranks, int fetchingMode) {
 
-    private void sendRankDataToWidget(List<RankElement> ranks) {
-
-        List<String> iconsToFetch = ranks.stream()
-                .filter(el -> null == iconsCache.get(el.getIconUrl()))
-                .map(RankElement::getIconUrl)
+        List<RankElement> iconsToFetch = ranks.stream()
+                .filter(el -> !ImageCache.exists(el.getAthleteId()))
                 .collect(Collectors.toList());
 
-        rankingRemoteProvider.loadUserImages(iconsToFetch, icons -> {
-            icons.forEach(el -> iconsCache.put(el.first, BitmapFactory.decodeStream(el.second)));
-            sendBroadcast(prepareWidgetIntent(ranks));
-        });
+        if(iconsToFetch.isEmpty()) {
+            sendBroadcast(prepareWidgetIntent(ranks, fetchingMode));
+        } else {
+            rankingRemoteProvider.loadUserImages(iconsToFetch, icons -> {
+                icons.forEach(el -> ImageCache.put(el.first, el.second));
+                ImageCache.flush();
+                sendBroadcast(prepareWidgetIntent(ranks, fetchingMode));
+            });
+        }
+
     }
 
-    private Intent prepareWidgetIntent(List<RankElement> rankElements) {
+    private Intent prepareWidgetIntent(List<RankElement> rankElements, int fetchingMode) {
         Bundle bundle = new Bundle();
-        bundle.putSerializable(EXTRA_RANK_LIST, (Serializable) convertToRankElementWrapper(rankElements));
+        bundle.putSerializable(EXTRA_RANK_LIST, (Serializable) rankElements);
 
         Intent intent = new Intent(EVENT_RANK_RESULT_WRAPPED_FETCHED);
         intent.putExtra(EXTRA_RANK_LIST_EXTENDED_BUNDLE, bundle);
+        intent.putExtra(PARAM_FETCHING_MODE, fetchingMode);
 
         intent.setComponent(new ComponentName(getApplicationContext(), PelicanTableRankWidget.class));
         return intent;
@@ -149,7 +148,7 @@ public class PelicanRankDataFetcherService extends Service {
         Optional<Long> loginResult = preferencesRepository.load(Preference.USER_ID, Long.class);
         rankingRemoteProvider.fetchRanking((rank) -> {
             loginResult.ifPresent(id -> processRanking(rank, id));
-            sendRankDataToWidget(rank);
+            sendRankDataToWidget(rank, FetchingMode.JOB);
         });
     }
 
@@ -176,7 +175,6 @@ public class PelicanRankDataFetcherService extends Service {
         }
 
         preferencesRepository.save(Preference.LAST_RANK, Integer.class, el.getPlace());
-
     }
 
     private Notification buildPlaceNotification(Integer actualPlace, Integer lastPlace) {
@@ -207,14 +205,15 @@ public class PelicanRankDataFetcherService extends Service {
     private void showSummaryNotify(RankElement rankElement) {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
 
-        Bitmap cachedUserAvatar = iconsCache.get(rankElement.getIconUrl());
+        Bitmap cachedUserAvatar = ImageCache.get(rankElement.getAthleteId());
         if (Objects.nonNull(cachedUserAvatar)) {
             notificationManager.notify(SUMMARY_NOTIFY_ID, buildSummaryNotification(rankElement, cachedUserAvatar));
         } else {
             rankingRemoteProvider.loadUserImage(rankElement.getIconUrl(), result -> {
                 Bitmap userAvatar = BitmapFactory.decodeStream(result);
-                iconsCache.put(rankElement.getIconUrl(), userAvatar);
+                ImageCache.put(rankElement.getAthleteId(), result);
                 notificationManager.notify(SUMMARY_NOTIFY_ID, buildSummaryNotification(rankElement, userAvatar));
+                ImageCache.flush();
             });
         }
     }
@@ -241,9 +240,16 @@ public class PelicanRankDataFetcherService extends Service {
     public void onCreate() {
         preferencesRepository = new PreferencesRepository(getApplicationContext());
         rankingRemoteProvider = new RankingRemoteProvider();
-        iconsCache = new LruCache<>(1000);
+        ImageCache.init(getApplicationContext());
         createNotificationChannel();
         super.onCreate();
+
+        Log.d(this.getClass().getSimpleName(), "onCreate");
     }
 
+    @Override
+    public void onDestroy() {
+        ImageCache.close();
+        Log.d(this.getClass().getSimpleName(), "onDestroy");
+    }
 }

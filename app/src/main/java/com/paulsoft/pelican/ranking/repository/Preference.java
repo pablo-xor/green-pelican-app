@@ -9,7 +9,8 @@ import lombok.Getter;
 public enum Preference {
 
     USER_ID("userId"),
-    LAST_RANK("lastRank");
+    LAST_RANK("lastRank"),
+    JOB_WAITING("jobWaiting");
 
     private String key;
 

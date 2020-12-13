@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Build;
 
 import com.paulsoft.pelican.ranking.service.PelicanRankJobService;
+import com.paulsoft.service.BuildConfig;
 
 public class RankJobScheduleInfo {
 
@@ -19,8 +20,15 @@ public class RankJobScheduleInfo {
             builder.setRequiresBatteryNotLow(true); //Android 9 :)
         }
 
-        builder.setMinimumLatency(5 * 60 * SECOND);
-        builder.setOverrideDeadline(10 * 60 * SECOND);
+        if(BuildConfig.DEBUG) {
+            builder.setMinimumLatency(5 * SECOND);
+            builder.setOverrideDeadline(10 * SECOND);
+        } else {
+            builder.setMinimumLatency(5 * 60 * SECOND);
+            builder.setOverrideDeadline(10 * 60 * SECOND);
+        }
+
+
         builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
 
         return builder.build();

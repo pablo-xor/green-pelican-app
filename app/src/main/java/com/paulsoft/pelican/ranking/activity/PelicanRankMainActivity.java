@@ -30,6 +30,7 @@ import android.widget.Spinner;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.paulsoft.pelican.ranking.commons.NetworkManager;
 import com.paulsoft.pelican.ranking.commons.RankJobScheduleInfo;
 import com.paulsoft.pelican.ranking.model.RankElement;
 import com.paulsoft.pelican.ranking.model.UserDto;
@@ -46,6 +47,7 @@ public class PelicanRankMainActivity extends AppCompatActivity {
 
     private static final String TAG = "PelicanMainActivity";
     public static final String EMPTY_TEXT = "";
+    public static final String EVENT_ANDROID_NET_STATE_CHANGED = "android.net.conn.CONNECTIVITY_CHANGE";
     private PreferencesRepository preferencesRepository;
     private Spinner userSelector;
     private UserSpinnerAdapter userSpinnerAdapter;
@@ -61,10 +63,17 @@ public class PelicanRankMainActivity extends AppCompatActivity {
 
             userSpinnerAdapter.updateData(rank);
 
-            if(currentUserId.isPresent()) {
+            if (currentUserId.isPresent()) {
                 userSelector.setSelection(userSpinnerAdapter.getPosition(currentUserId.get()));
             }
 
+        }
+    };
+
+    private final BroadcastReceiver networkStateChangedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            loadRankDataIfNetworkEnabled();
         }
     };
 
@@ -73,11 +82,14 @@ public class PelicanRankMainActivity extends AppCompatActivity {
         super.onResume();
         registerReceiver(rankResultFetchedReceiver, new IntentFilter(
                 PelicanRankDataFetcherService.EVENT_RANK_RESULT_FETCHED));
+        registerReceiver(networkStateChangedReceiver, new IntentFilter(EVENT_ANDROID_NET_STATE_CHANGED));
     }
+
     @Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(rankResultFetchedReceiver);
+        unregisterReceiver(networkStateChangedReceiver);
     }
 
     @Override
@@ -93,9 +105,15 @@ public class PelicanRankMainActivity extends AppCompatActivity {
         userSpinnerAdapter = new UserSpinnerAdapter(getApplicationContext());
         userSelector.setAdapter(userSpinnerAdapter);
 
-        Intent serviceIntent = new Intent(this, PelicanRankDataFetcherService.class);
-        serviceIntent.putExtra(PelicanRankDataFetcherService.PARAM_FETCHING_MODE, FetchingMode.SINGLE_CALL);
-        startService(serviceIntent);
+        loadRankDataIfNetworkEnabled();
+    }
+
+    private void loadRankDataIfNetworkEnabled() {
+        if (NetworkManager.isNetworkEnabled(getApplicationContext())) {
+            Intent serviceIntent = new Intent(this, PelicanRankDataFetcherService.class);
+            serviceIntent.putExtra(PelicanRankDataFetcherService.PARAM_FETCHING_MODE, FetchingMode.SINGLE_CALL);
+            startService(serviceIntent);
+        }
     }
 
     public void startApp(View view) {

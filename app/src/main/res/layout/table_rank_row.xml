@@ -24,16 +24,19 @@
 
     <ImageView
         android:id="@+id/userAvatar"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_weight="0.1"
+        android:layout_weight="0.2"
+        android:adjustViewBounds="true"
+        android:maxWidth="40dp"
+        android:scaleType="centerCrop"
         android:src="@android:drawable/presence_away" />
 
     <TextView
         android:id="@+id/login"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="0.6"
+        android:layout_weight="0.5"
         android:fontFamily="sans-serif-black"
         android:gravity="center_vertical"
         android:paddingLeft="5dp"

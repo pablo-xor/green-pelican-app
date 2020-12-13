@@ -43,11 +43,12 @@ public class PreferencesRepository {
     }
 
     public <T> Optional<T> load(Preference preference, Class<T> type) {
-        return Optional.ofNullable(load(preference.getKey(), type, null));
+        return Optional.ofNullable(load(preference, type, null));
     }
 
-    public <T> T load(String key, Class<T> type, T defaultValue) {
+    public <T> T load(Preference preference, Class<T> type, T defaultValue) {
 
+        String key = preference.getKey();
         if(!sharedPreferences.contains(key)) {
            return defaultValue;
         }

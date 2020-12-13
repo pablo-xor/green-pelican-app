@@ -27,7 +27,8 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:visibility="visible">
 
         <ListView
             android:id="@+id/widgetListView"
@@ -36,6 +37,9 @@
             android:background="#FFFFFF"
             android:divider="#AAA"
             android:dividerHeight="1dp"
+            android:fastScrollEnabled="false"
+            android:persistentDrawingCache="scrolling"
+            android:smoothScrollbar="false"
             tools:listitem="@layout/table_rank_row"></ListView>
     </LinearLayout>
 </LinearLayout>

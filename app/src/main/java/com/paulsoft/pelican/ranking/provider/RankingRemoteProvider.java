@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.paulsoft.pelican.ranking.backend.RankingClient;
 import com.paulsoft.pelican.ranking.model.RankElement;
+import com.paulsoft.service.BuildConfig;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import io.reactivex.schedulers.Schedulers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.ResponseBody;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -57,11 +59,11 @@ public class RankingRemoteProvider {
                 .subscribe(iconLoadedResult::afterFetched, this::onError);
     }
 
-    public void loadUserImages(List<String> iconUrls, FetchResult<List<Pair<String, InputStream>>> iconsFetchResult) {
+    public void loadUserImages(List<RankElement> iconUrls, FetchResult<List<Pair<Long, InputStream>>> iconsFetchResult) {
         List<Observable<ResponseBody>> calls = new ArrayList<>();
 
         iconUrls.forEach(el -> {
-            calls.add(rankingClient.getUserIcon(el)
+            calls.add(rankingClient.getUserIcon(el.getIconUrl())
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread()));
         });
@@ -70,11 +72,11 @@ public class RankingRemoteProvider {
                 .subscribe(iconsFetchResult::afterFetched, this::onError);
     }
 
-    private List<Pair<String, InputStream>> convertToIconStreams(List<String> urls, Object[] objects) {
-        List<Pair<String, InputStream>> icons = new ArrayList<>(objects.length);
+    private List<Pair<Long, InputStream>> convertToIconStreams(List<RankElement> urls, Object[] objects) {
+        List<Pair<Long, InputStream>> icons = new ArrayList<>(objects.length);
 
         for (int i = 0; i < urls.size(); i++) {
-            icons.add(Pair.create(urls.get(i), ((ResponseBody)objects[i]).byteStream()));
+            icons.add(Pair.create(urls.get(i).getAthleteId(), ((ResponseBody)objects[i]).byteStream()));
         }
 
         return icons;
@@ -85,14 +87,23 @@ public class RankingRemoteProvider {
                 .setLenient()
                 .create();
 
-        OkHttpClient httpClient = new OkHttpClient.Builder()
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .connectTimeout(CONN_TIMEOUT, TimeUnit.SECONDS)
                 .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
                 .addInterceptor((chain) -> {
                     Request.Builder ongoing = chain.request().newBuilder();
                     ongoing.addHeader(AUTH_HEADER, API_SECRET);
                     return chain.proceed(ongoing.build());
-                }).build();
+                });
+
+        if(BuildConfig.DEBUG) {
+            builder.addInterceptor(logging);
+        }
+
+        OkHttpClient httpClient = builder.build();
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BACKEND_API_URL)

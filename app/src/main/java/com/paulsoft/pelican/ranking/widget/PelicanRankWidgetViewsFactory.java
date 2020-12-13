@@ -1,36 +1,59 @@
 package com.paulsoft.pelican.ranking.widget;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.util.Log;
 import android.widget.AdapterView;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
+import com.paulsoft.pelican.ranking.commons.ImageCache;
 import com.paulsoft.pelican.ranking.model.RankElement;
-import com.paulsoft.pelican.ranking.model.RankElementWrapper;
+import com.paulsoft.pelican.ranking.service.PelicanRankDataFetcherService;
 import com.paulsoft.service.R;
 
 import java.util.List;
+import java.util.Objects;
 
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class PelicanRankWidgetViewsFactory implements RemoteViewsService.RemoteViewsFactory{
+public class PelicanRankWidgetViewsFactory implements RemoteViewsService.RemoteViewsFactory {
 
     private final Context context;
-    private final List<RankElementWrapper> rankList;
+    private final List<RankElement> rankList;
+
+    private final BroadcastReceiver dataChangedBroadcast = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            Bundle bundleExtra = intent.getBundleExtra(PelicanRankDataFetcherService.EXTRA_RANK_LIST_EXTENDED_BUNDLE);
+            List<RankElement> rankElements = (List<RankElement>) bundleExtra.getSerializable(PelicanRankDataFetcherService.EXTRA_RANK_LIST);
+            rankList.clear();
+            rankList.addAll(rankElements);
+        }
+    };
 
     @Override
     public void onCreate() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(PelicanTableRankWidget.EVENT_RANK_DATA_UPDATED);
+        context.registerReceiver(dataChangedBroadcast, filter);
     }
 
     @Override
     public void onDataSetChanged() {
 
+
     }
 
     @Override
     public void onDestroy() {
-
+        context.unregisterReceiver(dataChangedBroadcast);
     }
 
     @Override
@@ -40,19 +63,22 @@ public class PelicanRankWidgetViewsFactory implements RemoteViewsService.RemoteV
 
     @Override
     public RemoteViews getViewAt(int position) {
+
         if (position == AdapterView.INVALID_POSITION) {
             return null;
         }
 
-        RankElementWrapper rankItem = rankList.get(position);
+        RankElement rankElement = rankList.get(position);
+        Log.d("PelicanRankWidgetViewsFactory", "Rendering row for: " + rankElement);
 
         RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.table_rank_row);
 
-        if(rankItem.hasUserAvatar()) {
-            rv.setBitmap(R.id.userAvatar, null, rankItem.getIcon());
+        Bitmap avatar = ImageCache.get(rankElement.getAthleteId());
+
+        if(Objects.nonNull(avatar)) {
+            rv.setImageViewBitmap(R.id.userAvatar, avatar);
         }
 
-        RankElement rankElement = rankItem.getRankElement();
         rv.setTextViewText(R.id.place, rankElement.getPlace().toString());
         rv.setTextViewText(R.id.login, rankElement.getName());
         rv.setTextViewText(R.id.points, rankElement.getTotal() + " pts");
@@ -65,7 +91,7 @@ public class PelicanRankWidgetViewsFactory implements RemoteViewsService.RemoteV
 
     @Override
     public RemoteViews getLoadingView() {
-        return null;
+        return new RemoteViews(context.getPackageName(), R.layout.table_rank_loading);
     }
 
     @Override
@@ -75,11 +101,12 @@ public class PelicanRankWidgetViewsFactory implements RemoteViewsService.RemoteV
 
     @Override
     public long getItemId(int position) {
-        return rankList.get(position).getId();
+        return rankList.get(position).getAthleteId();
     }
 
     @Override
     public boolean hasStableIds() {
         return true;
     }
+
 }

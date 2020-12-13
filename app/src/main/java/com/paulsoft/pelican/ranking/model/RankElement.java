@@ -1,7 +1,6 @@
 package com.paulsoft.pelican.ranking.model;
 
 import java.io.Serializable;
-import java.net.URI;
 
 import lombok.Builder;
 import lombok.Data;
