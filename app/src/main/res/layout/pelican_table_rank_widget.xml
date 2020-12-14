@@ -1,0 +1,45 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#2C2C2C"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="28dp">
+
+        <TextView
+            android:id="@+id/widgetTitleLabel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#2C2C2C"
+            android:fontFamily="sans-serif"
+            android:gravity="center|right|center_horizontal"
+            android:includeFontPadding="true"
+            android:paddingRight="10dp"
+            android:text="Zielony Pelikan - Ranking"
+            android:textAllCaps="false"
+            android:textColor="#44FF00"
+            android:textSize="12sp"></TextView>
+
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="visible">
+
+        <ListView
+            android:id="@+id/widgetListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFFFFF"
+            android:divider="#AAA"
+            android:dividerHeight="1dp"
+            android:fastScrollEnabled="false"
+            android:persistentDrawingCache="scrolling"
+            android:smoothScrollbar="false"
+            tools:listitem="@layout/table_rank_row"></ListView>
+    </LinearLayout>
+</LinearLayout>

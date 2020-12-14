@@ -1,0 +1,2 @@
+-ignorewarnings
+-dontwarn module-info

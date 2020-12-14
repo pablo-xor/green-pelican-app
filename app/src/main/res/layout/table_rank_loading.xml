@@ -1,0 +1,13 @@
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/loading"
+    android:layout_width="match_parent"
+    android:layout_height="45dp"
+    android:layout_weight="1"
+    android:background="#B6B6B6"
+    android:backgroundTint="#838383"
+    android:gravity="center"
+    android:text="Wczytywanie..."
+    android:textAllCaps="false"
+    android:textColor="#000000"
+    android:textSize="18sp"
+    android:textStyle="italic" />
