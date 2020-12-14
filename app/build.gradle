@@ -20,9 +20,9 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        applicationId "com.instantappsample.service"
+        applicationId "com.paulsoft.pelican.ranking"
         minSdkVersion rootProject.minSdk
-        targetSdkVersion 24
+        targetSdkVersion 26
         versionCode rootProject.versionCode
         versionName rootProject.versionName
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -30,16 +30,26 @@ android {
 
     buildTypes {
         minified {
-            debuggable true
-            minifyEnabled true
+            debuggable false
+//            minifyEnabled true
             signingConfig signingConfigs.debug
         }
         debug {}
+
+        release {
+//            minifyEnabled true
+        }
     }
+
+    packagingOptions {
+        exclude "**/module-info.class"
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
 }
 
 dependencies {
@@ -50,8 +60,8 @@ dependencies {
     implementation "com.android.support:support-compat:28.0.0"
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.20'
-    implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
-    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
     implementation 'com.jakewharton:disklrucache:2.0.2'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0'
 

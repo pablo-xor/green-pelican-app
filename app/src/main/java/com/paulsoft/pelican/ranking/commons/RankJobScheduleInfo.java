@@ -24,8 +24,8 @@ public class RankJobScheduleInfo {
             builder.setMinimumLatency(5 * SECOND);
             builder.setOverrideDeadline(10 * SECOND);
         } else {
-            builder.setMinimumLatency(5 * 60 * SECOND);
-            builder.setOverrideDeadline(10 * 60 * SECOND);
+            builder.setMinimumLatency(30 * 60 * SECOND);
+            builder.setOverrideDeadline(60 * 60 * SECOND);
         }
 
 
