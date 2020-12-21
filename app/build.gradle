@@ -64,6 +64,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
     implementation 'com.jakewharton:disklrucache:2.0.2'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0'
+    implementation 'com.github.ybq:Android-SpinKit:1.4.0'
 
     compileOnly 'org.projectlombok:lombok:1.18.16'
     annotationProcessor 'org.projectlombok:lombok:1.18.16'
