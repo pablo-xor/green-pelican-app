@@ -67,7 +67,7 @@
         tools:layout_editor_absoluteX="1dp" />
 
     <TextView
-        android:id="@+id/ranking_label2"
+        android:id="@+id/ranking_select_label"
         android:layout_width="409dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="428dp"
@@ -77,20 +77,20 @@
         android:text="Wybierz pelikana"
         android:textColor="#FFFFFF"
         android:textSize="18sp"
+        android:visibility="invisible"
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_editor_absoluteX="1dp" />
 
-    <Button
-        android:id="@+id/start_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="145dp"
-        android:onClick="startApp"
-        android:text="Lecimy"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent" />
+    <com.github.ybq.android.spinkit.SpinKitView
+        android:id="@+id/loader"
+        style="@style/SpinKitView.Wave"
+        android:layout_width="409dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="120dp"
+        app:SpinKit_Color="#00B807"
+        app:layout_constraintTop_toTopOf="@+id/ranking_label"
+        tools:layout_editor_absoluteX="1dp" />
 
     <Spinner
         android:id="@+id/user_selector"
@@ -101,9 +101,39 @@
         android:background="#FFFFFF"
         android:foregroundTint="#000000"
         android:spinnerMode="dropdown"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/ranking_label2"
+        app:layout_constraintTop_toTopOf="@+id/ranking_select_label"
         app:layout_constraintVertical_bias="0.0"
         tools:layout_editor_absoluteX="2dp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="46dp"
+        android:layout_marginBottom="24dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/user_selector">
+
+        <Button
+            android:id="@+id/hide_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="144dp"
+            android:onClick="hideApp"
+            android:text="Ukryj" />
+
+        <Button
+            android:id="@+id/list_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="144dp"
+            android:onClick="showList"
+            android:text="Lista" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

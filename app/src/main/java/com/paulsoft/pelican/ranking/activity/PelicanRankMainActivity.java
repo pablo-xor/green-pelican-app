@@ -26,10 +26,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.github.ybq.android.spinkit.SpinKitView;
 import com.paulsoft.pelican.ranking.commons.NetworkManager;
 import com.paulsoft.pelican.ranking.commons.RankJobScheduleInfo;
 import com.paulsoft.pelican.ranking.model.RankElement;
@@ -52,6 +54,8 @@ public class PelicanRankMainActivity extends AppCompatActivity {
     private Spinner userSelector;
     private UserSpinnerAdapter userSpinnerAdapter;
     private Optional<Long> currentUserId;
+    private SpinKitView loader;
+    private TextView selectLabel;
 
     private final BroadcastReceiver rankResultFetchedReceiver = new BroadcastReceiver() {
         @Override
@@ -67,6 +71,9 @@ public class PelicanRankMainActivity extends AppCompatActivity {
                 userSelector.setSelection(userSpinnerAdapter.getPosition(currentUserId.get()));
             }
 
+            loader.setVisibility(View.INVISIBLE);
+            userSelector.setVisibility(View.VISIBLE);
+            selectLabel.setVisibility(View.VISIBLE);
         }
     };
 
@@ -105,6 +112,9 @@ public class PelicanRankMainActivity extends AppCompatActivity {
         userSpinnerAdapter = new UserSpinnerAdapter(getApplicationContext());
         userSelector.setAdapter(userSpinnerAdapter);
 
+        loader = findViewById(R.id.loader);
+        selectLabel = findViewById(R.id.ranking_select_label);
+
         loadRankDataIfNetworkEnabled();
     }
 
@@ -116,24 +126,35 @@ public class PelicanRankMainActivity extends AppCompatActivity {
         }
     }
 
-    public void startApp(View view) {
+    public void hideApp(View view) {
         UserDto selectedItem = (UserDto) userSelector.getSelectedItem();
         preferencesRepository.save(Preference.USER_ID, Long.class, selectedItem.getUserId());
 
         boolean userChanged = currentUserId.isPresent() && currentUserId.get() != selectedItem.getUserId();
 
-        Context context = getApplicationContext();
-        JobInfo jobInfo = RankJobScheduleInfo.create(context);
-        JobScheduler jobScheduler = context.getSystemService(JobScheduler.class);
-        jobScheduler.schedule(jobInfo);
+        scheduleDataFetching();
 
         Intent serviceIntent = new Intent(this, PelicanRankDataFetcherService.class);
         serviceIntent.putExtra(PelicanRankDataFetcherService.PARAM_FETCHING_MODE, FetchingMode.JOB);
         serviceIntent.putExtra(PelicanRankDataFetcherService.PARAM_USER_CHANGED, userChanged);
 
         startService(serviceIntent);
-
         finish();
+    }
+
+    private void scheduleDataFetching() {
+        Context context = getApplicationContext();
+        JobInfo jobInfo = RankJobScheduleInfo.create(context);
+        JobScheduler jobScheduler = context.getSystemService(JobScheduler.class);
+
+        jobScheduler.cancelAll();
+        jobScheduler.schedule(jobInfo);
+    }
+
+    public void showList(View view) {
+        scheduleDataFetching();
+
+        startActivity(new Intent(this, PelicanRankListActivity.class));
     }
 
 }

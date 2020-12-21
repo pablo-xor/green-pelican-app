@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +14,8 @@ import android.widget.RemoteViewsService;
 
 import com.paulsoft.pelican.ranking.commons.ImageCache;
 import com.paulsoft.pelican.ranking.model.RankElement;
+import com.paulsoft.pelican.ranking.repository.Preference;
+import com.paulsoft.pelican.ranking.repository.PreferencesRepository;
 import com.paulsoft.pelican.ranking.service.PelicanRankDataFetcherService;
 import com.paulsoft.service.R;
 
@@ -20,12 +23,14 @@ import java.util.List;
 import java.util.Objects;
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PelicanRankWidgetViewsFactory implements RemoteViewsService.RemoteViewsFactory {
 
     private final Context context;
     private final List<RankElement> rankList;
+    private long currentAthleteId;
 
     private final BroadcastReceiver dataChangedBroadcast = new BroadcastReceiver() {
         @Override
@@ -40,6 +45,8 @@ public class PelicanRankWidgetViewsFactory implements RemoteViewsService.RemoteV
 
     @Override
     public void onCreate() {
+        currentAthleteId = new PreferencesRepository(context).load(Preference.USER_ID, Long.class, -1L);
+
         IntentFilter filter = new IntentFilter();
         filter.addAction(PelicanTableRankWidget.EVENT_RANK_DATA_UPDATED);
         context.registerReceiver(dataChangedBroadcast, filter);
@@ -77,6 +84,10 @@ public class PelicanRankWidgetViewsFactory implements RemoteViewsService.RemoteV
 
         if(Objects.nonNull(avatar)) {
             rv.setImageViewBitmap(R.id.userAvatar, avatar);
+        }
+
+        if(rankElement.getAthleteId().equals(currentAthleteId)) {
+            rv.setTextColor(R.id.login, context.getResources().getColor(R.color.colorGreen));
         }
 
         rv.setTextViewText(R.id.place, rankElement.getPlace().toString());

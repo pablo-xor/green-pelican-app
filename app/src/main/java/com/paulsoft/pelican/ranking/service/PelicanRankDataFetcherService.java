@@ -17,7 +17,7 @@ import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-import com.paulsoft.pelican.ranking.activity.PelicanRankMainActivity;
+import com.paulsoft.pelican.ranking.activity.PelicanRankListActivity;
 import com.paulsoft.pelican.ranking.commons.ImageCache;
 import com.paulsoft.pelican.ranking.model.RankElement;
 import com.paulsoft.pelican.ranking.provider.RankingRemoteProvider;
@@ -82,11 +82,18 @@ public class PelicanRankDataFetcherService extends Service {
             case FetchingMode.FOR_WIDGET:
                 runCallForWidget();
                 break;
+            case FetchingMode.FOR_LIST:
+                runCallForList();
+                break;
             default:
                 throw new UnsupportedOperationException();
         }
 
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void runCallForList() {
+        rankingRemoteProvider.fetchRanking(this::sendRankData);
     }
 
     private void runCallForWidget() {
@@ -97,6 +104,22 @@ public class PelicanRankDataFetcherService extends Service {
           rankingRemoteProvider.fetchRanking(r -> sendRankDataToWidget(r, FetchingMode.FOR_WIDGET));
         }
 
+    }
+
+    private void sendRankData(List<RankElement> ranks) {
+        List<RankElement> iconsToFetch = ranks.stream()
+                .filter(el -> !ImageCache.exists(el.getAthleteId()))
+                .collect(Collectors.toList());
+
+        if(iconsToFetch.isEmpty()) {
+            publishRankFetchResult(ranks);
+        } else {
+            rankingRemoteProvider.loadUserImages(iconsToFetch, icons -> {
+                icons.forEach(el -> ImageCache.put(el.first, el.second));
+                ImageCache.flush();
+                publishRankFetchResult(ranks);
+            });
+        }
     }
 
     private void sendRankDataToWidget(List<RankElement> ranks, int fetchingMode) {
@@ -219,7 +242,7 @@ public class PelicanRankDataFetcherService extends Service {
     }
 
     private Notification buildSummaryNotification(RankElement rankElement, Bitmap result) {
-        Intent mainActivityIntent = new Intent(this, PelicanRankMainActivity.class);
+        Intent listIntent = new Intent(this, PelicanRankListActivity.class);
 
         return new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
                 .setLargeIcon(result)
@@ -228,7 +251,7 @@ public class PelicanRankDataFetcherService extends Service {
                 .setColorized(true)
                 .setBadgeIconType(NotificationCompat.BADGE_ICON_LARGE)
                 .setColor(getColor(R.color.colorOrange))
-                .setContentIntent(PendingIntent.getActivity(this, 0, mainActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+                .setContentIntent(PendingIntent.getActivity(this, 0, listIntent, PendingIntent.FLAG_UPDATE_CURRENT))
                 .setStyle(new NotificationCompat.InboxStyle()
                         .addLine("Jazda rowerem: " + rankElement.getRide() + "km")
                         .addLine("Bieganie: " + rankElement.getRun() + "km"))
